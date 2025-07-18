@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Science Squad Quiz - Admin</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔧</text></svg>">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔧 Science Squad Quiz - Administration</h1>
+            <div id="status">🔴 Déconnecté</div>
+        </header>
+
+        <!-- Interface Admin -->
+        <div id="admin-screen" class="screen">
+            <!-- Informations générales -->
+            <div class="card">
+                <h2>📊 Informations Générales</h2>
+                <div class="admin-info">
+                    <div class="admin-stats">
+                        <span class="stat-item">👥 Joueurs: <strong id="admin-player-count">0</strong></span>
+                        <span class="stat-item">🎯 Questions: <strong id="questions-count">0</strong></span>
+                        <span class="stat-item">📍 Question actuelle: <strong id="current-question-number">-</strong></span>
+                    </div>
+                    <div id="admin-players-container"></div>
+                </div>
+            </div>
+
+            <!-- Configuration des Questions -->
+            <div class="card">
+                <h2>📝 Configuration des Questions</h2>
+                <div class="question-config">
+                    <div class="form-group">
+                        <label for="question-topic">Sujet du Quiz:</label>
+                        <select id="question-topic">
+                            <option value="">Sélectionnez un sujet</option>
+                            <option value="sciences-generales">Sciences Générales</option>
+                            <option value="physique">Physique</option>
+                            <option value="chimie">Chimie</option>
+                            <option value="biologie">Biologie</option>
+                            <option value="mathematiques">Mathématiques</option>
+                            <option value="astronomie">Astronomie</option>
+                            <option value="informatique">Informatique</option>
+                            <option value="technologie">Technologie</option>
+                            <option value="personnalise">📝 Domaine personnalisé</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Nouveau champ pour domaine personnalisé -->
+                    <div class="form-group" id="custom-topic-group" style="display: none;">
+                        <label for="custom-topic">Domaine scientifique personnalisé:</label>
+                        <input type="text" id="custom-topic" placeholder="Ex: Géologie, Neurobiologie, Écologie marine...">
+                        <span class="input-helper">Décrivez précisément le domaine scientifique souhaité</span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="question-count">Nombre de questions:</label>
+                        <input type="number" id="question-count" min="1" max="30" value="10">
+                        <span class="input-helper">Entre 1 et 30 questions</span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="question-difficulty">Difficulté:</label>
+                        <select id="question-difficulty">
+                            <option value="facile">Facile</option>
+                            <option value="moyen" selected>Moyen</option>
+                            <option value="difficile">Difficile</option>
+                            <option value="progressif">Progressif</option>
+                        </select>
+                    </div>
+                    
+                    <button id="generate-questions-btn" class="btn btn-primary">
+                        🔄 Générer les Questions
+                    </button>
+                    <div id="generation-status" class="status-message"></div>
+                </div>
+            </div>
+
+            <!-- Gestion de la Partie -->
+            <div class="card">
+                <h2>🎮 Gestion de la Partie</h2>
+                <div class="game-control">
+                    <div class="game-status">
+                        <h3>État actuel:</h3>
+                        <div id="game-status">⏳ En attente de configuration</div>
+                    </div>
+                    
+                    <div class="game-actions">
+                        <button id="start-game-btn" class="btn btn-success" disabled>
+                            🚀 Démarrer la Partie
+                        </button>
+                        <button id="next-question-btn" class="btn btn-primary" disabled>
+                            ➡️ Question Suivante
+                        </button>
+                        <button id="show-answer-btn" class="btn btn-warning" disabled>
+                            💡 Afficher la Réponse
+                        </button>
+                        <button id="end-game-btn" class="btn btn-danger" disabled>
+                            🛑 Terminer la Partie
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Question Actuelle -->
+            <div class="card" id="current-question-card" style="display: none;">
+                <h2>❓ Question Actuelle</h2>
+                <div class="question-display">
+                    <div class="question-info">
+                        <span id="question-counter">Question 1/10</span>
+                        <div class="timer-container">
+                            <div class="timer-circle">
+                                <svg class="timer-svg" viewBox="0 0 36 36">
+                                    <path class="timer-background" d="M18 2.0845
+                                        a 15.9155 15.9155 0 0 1 0 31.831
+                                        a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                                    <path class="timer-progress" d="M18 2.0845
+                                        a 15.9155 15.9155 0 0 1 0 31.831
+                                        a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                                </svg>
+                                <div class="timer-text">
+                                    <span id="timer-seconds">10</span>
+                                    <span class="timer-label">s</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="question-text"></div>
+                    <div id="question-options"></div>
+                    <div id="question-answer" style="display: none;"></div>
+                </div>
+            </div>
+
+            <!-- Classement Temps Réel -->
+            <div class="card">
+                <h2>🏆 Classement Temps Réel</h2>
+                <div id="leaderboard-container">
+                    <p>Aucun classement disponible</p>
+                </div>
+            </div>
+
+            <!-- Navigation -->
+            <div class="card">
+                <div class="admin-links">
+                    <a href="/" class="btn btn-secondary">🏠 Retour à l'accueil</a>
+                    <button id="reset-all-btn" class="btn btn-danger">🔄 Réinitialiser Tout</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="admin.js"></script>
+</body>
+</html>

@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Science Squad Quiz</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🚀 Science Squad Quiz</h1>
+            <div id="status">🔴 Déconnecté</div>
+        </header>
+
+        <!-- Écran d'accueil -->
+        <div id="welcome-screen" class="screen">
+            <div class="card">
+                <h2>Rejoindre le Quiz</h2>
+                
+                <div class="form-group">
+                    <label>Votre pseudo:</label>
+                    <input type="text" id="player-name" placeholder="Entrez votre pseudo">
+                </div>
+
+                <div class="form-group">
+                    <label>Choisissez votre avatar:</label>
+                    <div class="avatar-grid">
+                        <div class="avatar" data-avatar="😊">😊</div>
+                        <div class="avatar" data-avatar="🤓">🤓</div>
+                        <div class="avatar" data-avatar="🚀">🚀</div>
+                        <div class="avatar" data-avatar="🔬">🔬</div>
+                        <div class="avatar" data-avatar="⚡">⚡</div>
+                        <div class="avatar" data-avatar="🎯">🎯</div>
+                        <div class="avatar" data-avatar="🏆">🏆</div>
+                        <div class="avatar" data-avatar="🎮">🎮</div>
+                    </div>
+                </div>
+
+                <button id="join-game-btn" class="btn btn-primary">Rejoindre le Quiz</button>
+                <!-- Bouton admin supprimé -->
+            </div>
+        </div>
+
+        <!-- Lobby joueurs -->
+        <div id="lobby-screen" class="screen hidden">
+            <div class="card">
+                <h2>🎮 Lobby du Quiz</h2>
+                <p>En attente du démarrage de la partie...</p>
+                
+                <div class="player-info">
+                    <h3>Votre profil:</h3>
+                    <div id="current-player-info"></div>
+                </div>
+
+                <div class="players-list">
+                    <h3>Joueurs connectés (<span id="player-count">0</span>)</h3>
+                    <div id="players-container"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Interface de Jeu -->
+        <div id="game-screen" class="screen hidden">
+            <div class="card">
+                <div class="game-header">
+                    <div class="game-info">
+                        <span id="game-question-counter">Question 1/10</span>
+                        <div class="player-status">
+                            <span id="player-avatar-game">🚀</span>
+                            <span id="player-name-game">Joueur</span>
+                            <span id="player-lives-game">❤️ 3</span>
+                        </div>
+                    </div>
+                    
+                    <div class="game-timer">
+                        <div class="timer-circle">
+                            <svg class="timer-svg" viewBox="0 0 36 36">
+                                <path class="timer-background" d="M18 2.0845
+                                    a 15.9155 15.9155 0 0 1 0 31.831
+                                    a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                                <path class="timer-progress" d="M18 2.0845
+                                    a 15.9155 15.9155 0 0 1 0 31.831
+                                    a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                            </svg>
+                            <div class="timer-text">
+                                <span id="game-timer-seconds">10</span>
+                                <span class="timer-label">s</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="question-section">
+                    <h3 id="game-question-text">Question sera affichée ici</h3>
+                    
+                    <div id="game-options" class="game-options">
+                        <!-- Options générées dynamiquement -->
+                    </div>
+                </div>
+                
+                <div id="game-result" class="game-result hidden">
+                    <div class="result-content">
+                        <h4>Résultat</h4>
+                        <p id="result-text"></p>
+                        <div id="result-explanation"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Écran de Fin -->
+        <div id="end-screen" class="screen hidden">
+            <div class="card">
+                <h2>🎉 Fin du Quiz</h2>
+                <div class="final-score">
+                    <div class="score-display">
+                        <span id="final-score-text">Score Final</span>
+                        <div id="final-score-value">0/0</div>
+                    </div>
+                    <div class="score-message">
+                        <p id="score-message-text">Bravo pour votre participation!</p>
+                    </div>
+                </div>
+                
+                <div class="end-actions">
+                    <button id="return-lobby-btn" class="btn btn-secondary">Retourner au Lobby</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Interface Admin -->
+        <div id="admin-screen" class="screen hidden">
+            <div class="card">
+                <h2>🔧 Panel Administrateur</h2>
+                
+                <div class="admin-info">
+                    <h3>Joueurs connectés: <span id="admin-player-count">0</span></h3>
+                    <div id="admin-players-container"></div>
+                </div>
+
+                <div class="admin-controls">
+                    <button id="generate-questions-btn" class="btn btn-primary">Générer Questions</button>
+                    <button id="start-game-btn" class="btn btn-success">Démarrer Partie</button>
+                    <button id="reset-game-btn" class="btn btn-danger">Réinitialiser</button>
+                </div>
+
+                <div class="admin-status">
+                    <h3>État du jeu:</h3>
+                    <div id="game-status">En attente...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

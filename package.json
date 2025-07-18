@@ -1,0 +1,55 @@
+{
+  "name": "science-squad-quiz",
+  "version": "2.0.0",
+  "description": "Quiz Science Squad - Version GPT avec génération intelligente de questions scientifiques",
+  "main": "server.js",
+  "keywords": [
+    "quiz",
+    "science",
+    "education",
+    "gpt",
+    "openai",
+    "websocket",
+    "realtime"
+  ],
+  "author": "Rodevv972",
+  "license": "MIT",
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "NODE_ENV=development nodemon server.js",
+    "dev:debug": "NODE_ENV=development DEBUG=* nodemon server.js",
+    "prod": "NODE_ENV=production node server.js",
+    "test": "echo \"Tests à implémenter\" && exit 0",
+    "lint": "echo \"Linting à implémenter\" && exit 0",
+    "validate-env": "node -e \"require('./scripts/validate-env.js')\"",
+    "health-check": "curl -f http://localhost:${PORT:-3000}/health || exit 1"
+  },
+  "dependencies": {
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "openai": "^4.24.1",
+    "socket.io": "^4.7.4"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  },
+  "optionalDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Rodevv972/ScienceSquad.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Rodevv972/ScienceSquad/issues"
+  },
+  "homepage": "https://github.com/Rodevv972/ScienceSquad#readme",
+  "config": {
+    "port": 3000,
+    "max_players": 50,
+    "question_time_limit": 10,
+    "lives_per_player": 3
+  }
+}
