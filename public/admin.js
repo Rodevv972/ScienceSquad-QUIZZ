@@ -138,7 +138,9 @@ async function showCurrentQuestion() {
     document.getElementById('question-options').innerHTML = '';
 
     try {
-        const q = await generateOneQuestion();
+        // Correction : on récupère la vraie question dans .data
+        const response = await generateOneQuestion();
+        const q = response.data;
         console.log('DEBUG question générée', q);
 
         // PATCH: Sécurisation du format de la question
