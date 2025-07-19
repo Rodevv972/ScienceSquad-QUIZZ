@@ -2,6 +2,7 @@ const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
 const path = require('path');
+const mongoose = require('mongoose'); // AJOUTÉ
 require('dotenv').config();
 
 const app = express();
@@ -10,12 +11,12 @@ const io = socketIo(server);
 
 // Validation des variables d'environnement au démarrage
 function validateEnvironment() {
-    const required = ['OPENAI_API_KEY'];
+    const required = ['OPENAI_API_KEY', 'MONGODB_URI']; // AJOUT MONGODB_URI
     const missing = required.filter(key => !process.env[key]);
     
     if (missing.length > 0) {
         console.error('❌ Variables d\'environnement manquantes:', missing);
-        console.error('📋 Créez un fichier .env avec: OPENAI_API_KEY=votre_clé');
+        console.error('📋 Créez un fichier .env avec: OPENAI_API_KEY=votre_clé, MONGODB_URI=... ');
         process.exit(1);
     }
     
@@ -31,6 +32,17 @@ function validateEnvironment() {
 // Valider l'environnement au démarrage
 validateEnvironment();
 
+// Connexion à MongoDB via Mongoose
+mongoose.connect(process.env.MONGODB_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+})
+.then(() => console.log('✅ Connecté à MongoDB'))
+.catch(err => {
+    console.error('❌ Erreur connexion MongoDB:', err);
+    process.exit(1);
+});
+
 // Middleware pour traiter les requêtes JSON
 app.use(express.json());
 
@@ -44,6 +56,12 @@ if (process.env.NODE_ENV === 'development') {
 
 // Servir les fichiers statiques
 app.use(express.static('public'));
+
+// AJOUT ROUTES LEADERBOARD & LIVESTATS
+const leaderboardRoutes = require('./routes/leaderboard');
+const liveStatsRoutes = require('./routes/liveStats');
+app.use('/api/leaderboard', leaderboardRoutes);
+app.use('/api/liveStats', liveStatsRoutes);
 
 // Route pour la page d'accueil (joueurs)
 app.get('/', (req, res) => {
@@ -71,7 +89,6 @@ app.get('/health', (req, res) => {
 app.post('/api/generate-gpt-question', async (req, res) => {
     try {
         const { topic, difficulty, questionNumber, totalQuestions, sessionId, customPrompt } = req.body;
-        
         // Validation améliorée des paramètres
         const validationError = validateQuestionRequest(req.body);
         if (validationError) {
@@ -81,12 +98,9 @@ app.post('/api/generate-gpt-question', async (req, res) => {
                 code: 'INVALID_PARAMETERS'
             });
         }
-
         // Importer le service GPT
         const triviaService = require('./server/src/services/triviaService');
-        
         console.log(`🎯 Génération GPT - ${topic} (${difficulty}) - Question ${questionNumber}/${totalQuestions}`);
-        
         // Générer la question avec le nouveau service
         const question = await triviaService.generateSingleQuestion(
             topic, 
@@ -95,20 +109,16 @@ app.post('/api/generate-gpt-question', async (req, res) => {
             totalQuestions, 
             sessionId || `session-${Date.now()}`
         );
-        
         // Log de succès
         console.log(`✅ Question générée: "${question.question.substring(0, 50)}..."`);
-        
         res.json({
             success: true,
             data: question,
             generated_at: new Date().toISOString(),
             service: 'gpt'
         });
-        
     } catch (error) {
         console.error('❌ Erreur génération question GPT:', error);
-        
         // Réponse d'erreur structurée selon le type d'erreur
         const errorResponse = {
             error: 'Erreur lors de la génération de la question',
@@ -117,10 +127,8 @@ app.post('/api/generate-gpt-question', async (req, res) => {
             timestamp: new Date().toISOString(),
             service: 'gpt'
         };
-        
         // Code de statut HTTP selon le type d'erreur
         const statusCode = getHttpStatusFromError(error);
-        
         res.status(statusCode).json(errorResponse);
     }
 });
@@ -128,7 +136,6 @@ app.post('/api/generate-gpt-question', async (req, res) => {
 // Route de compatibilité pour l'ancienne API (DEPRECATED)
 app.post('/api/generate-single-question', async (req, res) => {
     console.warn('⚠️ Route dépréciée /api/generate-single-question - Utilisez /api/generate-gpt-question');
-    
     // Rediriger vers la nouvelle API GPT
     req.url = '/api/generate-gpt-question';
     return app._router.handle(req, res);
@@ -138,27 +145,22 @@ app.post('/api/generate-single-question', async (req, res) => {
 app.post('/api/generate-questions-batch', async (req, res) => {
     try {
         const { topic, count, difficulty, sessionId } = req.body;
-        
         if (!topic || !count || !difficulty) {
             return res.status(400).json({ 
                 error: 'Paramètres manquants (topic, count, difficulty requis)',
                 code: 'MISSING_PARAMETERS'
             });
         }
-
         if (count > 30) {
             return res.status(400).json({ 
                 error: 'Maximum 30 questions par batch',
                 code: 'BATCH_TOO_LARGE'
             });
         }
-
         const gptQuizService = require('./server/src/services/triviaService');
         const questions = [];
         const errors = [];
-        
         console.log(`🔄 Génération batch de ${count} questions - ${topic}`);
-        
         // Générer les questions en série pour éviter les rate limits
         for (let i = 1; i <= count; i++) {
             try {
@@ -166,20 +168,16 @@ app.post('/api/generate-questions-batch', async (req, res) => {
                     topic, difficulty, i, count, sessionId || `batch-${Date.now()}`
                 );
                 questions.push(question);
-                
                 // Petite pause entre les appels pour éviter les rate limits
                 if (i < count) {
                     await new Promise(resolve => setTimeout(resolve, 500));
                 }
-                
             } catch (error) {
                 console.warn(`⚠️ Erreur question ${i}:`, error.message);
                 errors.push({ questionNumber: i, error: error.message });
             }
         }
-        
         console.log(`✅ Batch terminé: ${questions.length}/${count} questions générées`);
-        
         res.json({
             success: true,
             data: questions,
@@ -190,7 +188,6 @@ app.post('/api/generate-questions-batch', async (req, res) => {
             },
             errors: errors.length > 0 ? errors : undefined
         });
-        
     } catch (error) {
         console.error('❌ Erreur génération batch:', error);
         res.status(500).json({
@@ -368,16 +365,22 @@ io.on('connection', (socket) => {
             return;
         }
 
+        // PATCH: récupère l'ancien joueur si présent
+        const existingPlayer = Array.from(gameState.players.values()).find(
+            p => p.name === data.name && p.avatar === data.avatar
+        );
+        const lives = existingPlayer ? existingPlayer.lives : (parseInt(process.env.LIVES_PER_PLAYER) || 3);
+
         const player = {
             id: socket.id,
             name: data.name?.trim().substring(0, 20) || 'Anonyme',
             avatar: data.avatar?.trim() || '😊',
-            lives: parseInt(process.env.LIVES_PER_PLAYER) || 3,
+            lives: lives,
             score: 0,
             joinedAt: new Date().toISOString(),
             reconnected: true
         };
-        
+
         gameState.players.set(socket.id, player);
         console.log(`🔄 ${player.name} reconnecté (Total: ${gameState.players.size})`);
         
@@ -490,6 +493,23 @@ io.on('connection', (socket) => {
         }
     });
 
+    // PATCH: gestion des vies lors d'une mauvaise réponse
+    socket.on('player-wrong-answer', () => {
+        console.log(`[DECREMENT] Signal mauvaise réponse pour ${socket.id}`);
+        const player = gameState.players.get(socket.id);
+        if (player) {
+            console.log(`[DECREMENT] Avant: ${player.lives}`);
+            if (player.lives > 0) {
+                player.lives -= 1;
+                console.log(`[DECREMENT] Après: ${player.lives}`);
+                io.emit('players-update', Array.from(gameState.players.values()));
+                if (player.lives === 0) {
+                    socket.emit('player-out', { message: 'Vous n\'avez plus de vies !' });
+                }
+            }
+        }
+    });
+
     // Déconnexion
     socket.on('disconnect', () => {
         if (gameState.players.has(socket.id)) {
@@ -502,7 +522,6 @@ io.on('connection', (socket) => {
         if (gameState.admin === socket.id) {
             gameState.admin = null;
             console.log('🔧 Admin déconnecté');
-            
             // Optionnel: pause automatique si admin se déconnecte en cours de partie
             if (gameState.gameActive) {
                 console.log('⏸️ Partie mise en pause (admin déconnecté)');

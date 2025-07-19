@@ -287,6 +287,11 @@ function startGameTimer(timeLimit) {
     }, 1000);
 }
 
+// PATCH : Fonction pour signaler une mauvaise réponse au serveur
+function signalWrongAnswer() {
+    socket.emit('player-wrong-answer');
+}
+
 // Afficher la réponse
 function showAnswer(answerData) {
     clearInterval(gameTimer);
@@ -321,6 +326,7 @@ function showAnswer(answerData) {
     } else if (selectedOptionIndex !== null) {
         resultText.textContent = '❌ Mauvaise réponse';
         resultText.className = 'incorrect';
+        signalWrongAnswer();
     } else {
         resultText.textContent = '⏰ Temps écoulé';
         resultText.className = 'incorrect';
@@ -333,6 +339,18 @@ function showAnswer(answerData) {
     resultDiv.classList.remove('hidden');
     
     console.log(`📊 Résultat: ${isCorrect ? 'Correct' : 'Incorrect'} | Score: ${playerScore}/${currentQuestionIndex + 1}`);
+}
+
+// PATCH : Événement pour gérer la sortie du joueur quand il n'a plus de vies
+function handlePlayerOut(message) {
+    alert(message || "Vous n'avez plus de vies !");
+    // Désactiver les boutons de réponse et autres interactions du jeu
+    const options = document.querySelectorAll('.game-option');
+    options.forEach(option => {
+        option.classList.add('disabled');
+        option.style.pointerEvents = 'none';
+    });
+    // Tu peux aussi ajouter d'autres actions pour finir la partie ou afficher un écran spécifique
 }
 
 // Afficher l'écran de fin
@@ -407,6 +425,21 @@ function initializeSocketEvents() {
     // Mise à jour des joueurs
     socket.on('players-update', (players) => {
         displayLobbyPlayers(players);
+        // PATCH : Met à jour le nombre de vies affichées pendant la partie
+        if (currentPlayer) {
+            const me = players.find(p => p.id === currentPlayer.id);
+            if (me) {
+                currentPlayer.lives = me.lives;
+                if (gameScreen && !gameScreen.classList.contains('hidden')) {
+                    document.getElementById('player-lives-game').textContent = `❤️ ${currentPlayer.lives}`;
+                }
+            }
+        }
+    });
+    
+    // PATCH : gestion de l'événement de sortie du joueur
+    socket.on('player-out', (data) => {
+        handlePlayerOut(data.message);
     });
     
     // Événements de partie

@@ -86,19 +86,19 @@ Génère une question de quiz scientifique en français avec les spécifications
 - Question ${questionNumber}/${totalQuestions} de cette session
 
 🎯 CONSIGNES STRICTES :
-1. Question claire et précise (1-2 phrases maximum)
+1. Question claire et concise (**1 phrase maximum, moins de 15 mots**) // MODIF: consigne de longueur
 2. Exactement 4 options de réponse plausibles (A, B, C, D)
 3. UNE SEULE réponse correcte
-4. Explication pédagogique de 2-3 phrases qui enrichit les connaissances
+4. Explication pédagogique très courte (1 à 2 phrases, moins de 40 mots) // MODIF: consigne de longueur
 5. Éviter les questions trop évidentes ou les pièges injustes
 6. Adapter le vocabulaire au niveau demandé
 
 📝 FORMAT JSON REQUIS (RESPECTER EXACTEMENT) :
 {
-    "question": "Votre question scientifique précise ?",
+    "question": "Votre question scientifique concise ?",
     "options": ["Option A", "Option B", "Option C", "Option D"],
     "correct": 2,
-    "explanation": "Explication pédagogique claire qui va au-delà de la simple définition.",
+    "explanation": "Explication pédagogique claire et très courte.",
     "difficulty": "${difficulty}",
     "topic": "${topic}",
     "source_hint": "Domaine ou concept clé pour approfondir"
@@ -184,6 +184,10 @@ Tu es un expert pédagogue et scientifique spécialisé dans la création de qui
 - Options de réponse plausibles mais distinctes
 - Une seule réponse incontestablement correcte
 - Explication pédagogique enrichissante
+
+🔔 Les questions doivent être très courtes (moins de 15 mots) pour être lisibles et compréhensibles en moins de 10 secondes.
+// MODIF: consigne de brièveté ajoutée
+- Les explications doivent être aussi concises que possible (moins de 40 mots).
 `;
     }
 
@@ -205,6 +209,14 @@ Choisis un angle ou concept différent dans le même domaine.
             // Validation stricte de la structure
             this.validateQuestionStructure(parsed);
 
+            // MODIF: Validation de la longueur des champs
+            if (parsed.question.split(' ').length > 15) {
+                throw new Error('La question générée est trop longue (plus de 15 mots)');
+            }
+            if (parsed.explanation.split(' ').length > 40) {
+                throw new Error("L'explication générée est trop longue (plus de 40 mots)");
+            }
+
             // Normalisation et enrichissement
             return {
                 id: questionNumber,
@@ -220,9 +232,9 @@ Choisis un angle ou concept différent dans le même domaine.
             };
 
         } catch (error) {
-            console.error('❌ Erreur parsing JSON GPT:', error.message);
+            console.error('❌ Erreur parsing/validation JSON GPT:', error.message);
             console.error('📄 Contenu reçu:', content);
-            throw new Error(`Format de réponse GPT invalide: ${error.message}`);
+            throw new Error(`Format ou longueur de réponse GPT invalide: ${error.message}`);
         }
     }
 
@@ -258,22 +270,22 @@ Choisis un angle ou concept différent dans le même domaine.
         // Questions de secours par domaine
         const fallbackQuestions = {
             'physique': {
-                question: "Quelle est l'unité SI de la force ?",
+                question: "Quelle est l'unité SI de la force ?",
                 options: ["Newton (N)", "Joule (J)", "Watt (W)", "Pascal (Pa)"],
                 correct: 0,
-                explanation: "Le Newton (N) est l'unité SI de la force, définie comme la force nécessaire pour accélérer une masse d'1 kg à 1 m/s²."
+                explanation: "Le Newton (N) est l'unité SI de la force. Il correspond à 1 kg·m/s²."
             },
             'chimie': {
-                question: "Quel est l'élément chimique le plus abondant dans l'univers ?",
+                question: "Quel est l'élément le plus abondant de l'univers ?",
                 options: ["Hydrogène", "Hélium", "Oxygène", "Carbone"],
                 correct: 0,
-                explanation: "L'hydrogène représente environ 75% de la matière normale de l'univers en masse et plus de 90% en nombre d'atomes."
+                explanation: "L'hydrogène est l'élément le plus abondant, représentant environ 75% de la matière normale."
             },
             'biologie': {
-                question: "Quelle structure cellulaire contient l'ADN chez les eucaryotes ?",
+                question: "Où se trouve l'ADN chez les eucaryotes ?",
                 options: ["Mitochondrie", "Noyau", "Ribosome", "Réticulum endoplasmique"],
                 correct: 1,
-                explanation: "Le noyau est l'organite qui contient la majeure partie de l'ADN chez les cellules eucaryotes, protégé par l'enveloppe nucléaire."
+                explanation: "Chez les eucaryotes, l'ADN est principalement dans le noyau, protégé par l'enveloppe nucléaire."
             }
         };
 

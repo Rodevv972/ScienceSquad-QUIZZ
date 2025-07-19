@@ -71,6 +71,13 @@
                             <option value="progressif">Progressif</option>
                         </select>
                     </div>
+
+                    <!-- PATCH: Ajout du choix du temps par question -->
+                    <div class="form-group">
+                        <label for="timer-seconds">Temps par question (secondes) :</label>
+                        <input type="number" id="timer-seconds" min="5" max="120" value="10">
+                        <span class="input-helper">Définissez le temps imparti pour chaque question (5 à 120 secondes)</span>
+                    </div>
                     
                     <button id="generate-questions-btn" class="btn btn-primary">
                         🔄 Générer les Questions
