@@ -1,4 +1,5 @@
 const OpenAI = require('openai');
+const { QuestionMemory } = require('./QuestionMemory'); // import du module mémoire MongoDB
 
 // Service de génération de questions avec GPT uniquement
 class GPTQuizService {
@@ -18,15 +19,15 @@ class GPTQuizService {
                 console.log(`🔄 Génération GPT - Tentative ${attempt}/${maxRetries} - Question ${questionNumber}/${totalQuestions}`);
 
                 const question = await this.generateWithGPT(topic, difficulty, questionNumber, totalQuestions);
-                
-                // Vérifier si cette question a déjà été utilisée
-                if (this.questionMemory.isQuestionUsed(sessionId, question.question, question.options)) {
+
+                // ⚠️ Vérification asynchrone en DB et session
+                if (await this.questionMemory.isQuestionUsed(sessionId, question.question, question.options)) {
                     console.log('⚠️ Question similaire déjà utilisée, nouvelle tentative...');
                     continue;
                 }
 
-                // Marquer la question comme utilisée
-                this.questionMemory.markQuestionUsed(sessionId, question.question, question.options);
+                // ⚠️ Enregistrement asynchrone en DB et session
+                await this.questionMemory.markQuestionUsed(sessionId, question.question, question.options);
 
                 console.log('✅ Question GPT générée avec succès');
                 return question;
@@ -86,10 +87,10 @@ Génère une question de quiz scientifique en français avec les spécifications
 - Question ${questionNumber}/${totalQuestions} de cette session
 
 🎯 CONSIGNES STRICTES :
-1. Question claire et concise (**1 phrase maximum, moins de 15 mots**) // MODIF: consigne de longueur
+1. Question claire et concise (**1 phrase maximum, moins de 15 mots**)
 2. Exactement 4 options de réponse plausibles (A, B, C, D)
 3. UNE SEULE réponse correcte
-4. Explication pédagogique très courte (1 à 2 phrases, moins de 40 mots) // MODIF: consigne de longueur
+4. Explication pédagogique très courte (1 à 2 phrases, moins de 40 mots)
 5. Éviter les questions trop évidentes ou les pièges injustes
 6. Adapter le vocabulaire au niveau demandé
 
@@ -186,7 +187,6 @@ Tu es un expert pédagogue et scientifique spécialisé dans la création de qui
 - Explication pédagogique enrichissante
 
 🔔 Les questions doivent être très courtes (moins de 15 mots) pour être lisibles et compréhensibles en moins de 10 secondes.
-// MODIF: consigne de brièveté ajoutée
 - Les explications doivent être aussi concises que possible (moins de 40 mots).
 `;
     }
@@ -209,7 +209,7 @@ Choisis un angle ou concept différent dans le même domaine.
             // Validation stricte de la structure
             this.validateQuestionStructure(parsed);
 
-            // MODIF: Validation de la longueur des champs
+            // Validation de la longueur des champs
             if (parsed.question.split(' ').length > 15) {
                 throw new Error('La question générée est trop longue (plus de 15 mots)');
             }
@@ -230,7 +230,6 @@ Choisis un angle ou concept différent dans le même domaine.
                 generated_at: new Date().toISOString(),
                 model_used: 'gpt-3.5-turbo'
             };
-
         } catch (error) {
             console.error('❌ Erreur parsing/validation JSON GPT:', error.message);
             console.error('📄 Contenu reçu:', content);
@@ -306,82 +305,6 @@ Choisis un angle ou concept différent dans le même domaine.
     }
 }
 
-// Classe pour gérer la mémoire des questions et éviter les répétitions
-class QuestionMemory {
-    constructor() {
-        this.sessionQuestions = new Map(); // Questions par session
-        this.globalHashes = new Set(); // Hashes globaux pour éviter répétitions
-        this.recentTopics = []; // Sujets récents pour hints anti-répétition
-    }
-
-    generateQuestionHash(question, options) {
-        // Créer un hash basé sur les mots-clés principaux
-        const content = (question + options.join(' ')).toLowerCase();
-        const keywords = content.match(/\b\w{4,}\b/g) || [];
-        return keywords.slice(0, 5).sort().join('-');
-    }
-
-    isQuestionUsed(sessionId, question, options) {
-        const hash = this.generateQuestionHash(question, options);
-
-        // Vérifier dans la session courante (strict)
-        const sessionQuestions = this.sessionQuestions.get(sessionId) || new Set();
-        if (sessionQuestions.has(hash)) {
-            console.log('🔍 Question détectée comme répétition dans la session');
-            return true;
-        }
-
-        return false;
-    }
-
-    markQuestionUsed(sessionId, question, options) {
-        const hash = this.generateQuestionHash(question, options);
-
-        // Marquer pour la session
-        if (!this.sessionQuestions.has(sessionId)) {
-            this.sessionQuestions.set(sessionId, new Set());
-        }
-        this.sessionQuestions.get(sessionId).add(hash);
-
-        // Ajouter au global (pour statistiques)
-        this.globalHashes.add(hash);
-
-        // Extraire le sujet principal pour les hints
-        const questionWords = question.toLowerCase().match(/\b\w{5,}\b/g) || [];
-        if (questionWords.length > 0) {
-            this.recentTopics.push(questionWords[0]);
-            if (this.recentTopics.length > 10) {
-                this.recentTopics.shift(); // Garder seulement les 10 derniers
-            }
-        }
-    }
-
-    getRecentQuestions() {
-        return this.recentTopics;
-    }
-
-    clearSession(sessionId) {
-        this.sessionQuestions.delete(sessionId);
-        console.log(`🧹 Mémoire de session ${sessionId} nettoyée`);
-    }
-
-    getStats() {
-        const totalSessions = this.sessionQuestions.size;
-        const totalQuestions = this.globalHashes.size;
-        return { totalSessions, totalQuestions };
-    }
-}
-
-// Instance unique du service
-const gptQuizService = new GPTQuizService();
-
-// Fonction compatible avec l'ancienne API
-async function generateSingleQuestion(topic, difficulty, questionNumber, totalQuestions, sessionId) {
-    return await gptQuizService.generateSingleQuestion(topic, difficulty, questionNumber, totalQuestions, sessionId);
-}
-
 module.exports = {
-    generateSingleQuestion,
-    GPTQuizService,
-    QuestionMemory
+    GPTQuizService
 };
