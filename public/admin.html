@@ -38,186 +38,165 @@ body {
     width: 100vw;
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: center; /* Centré horizontalement */
     background: rgba(34, 36, 62, 0.32);
     border-bottom: 1.5px solid #fff2;
     box-shadow: 0 6px 32px #2a2d4a36;
     backdrop-filter: blur(8px);
-    padding: 0 36px;
-    height: 56px;
+    padding: 0 18px;
+    height: 40px;
+    min-height: 40px;
     animation: fade-in 0.7s;
 }
-@keyframes fade-in {
-    from { opacity: 0; transform: translateY(-10px);}
-    to   { opacity: 1; transform: translateY(0);}
-}
 .logo {
-    height: 38px;
-    width: 38px;
-    margin-right: 10px;
+    height: 26px;
+    width: 26px;
+    margin-right: 6px;
     filter: drop-shadow(0 2px 8px #fff2);
     opacity: 0.93;
-    animation: popLogo 0.7s;
-}
-@keyframes popLogo {
-  0% { transform: scale(0.6); opacity: 0.4;}
-  60% { transform: scale(1.12);}
-  100% { transform: scale(1); opacity: 0.93;}
 }
 .header-title {
-    font-size: 1.45rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    font-size: 1rem;
     font-weight: 700;
-    letter-spacing: 0.5px;
-    flex: 1 1 auto;
-    text-align: center;
     color: #fff;
-    text-shadow: 0 2px 18px #4f46e5b3;
     margin: 0;
-    animation: fade-in 1.2s;
+    line-height: 1;
+    text-shadow: 0 2px 18px #4f46e5b3;
 }
 .status-glow {
     display: flex;
     align-items: center;
-    gap: 6px;
-    font-size: 1rem;
+    gap: 5px;
+    font-size: 0.97rem;
     font-weight: 500;
-    background: rgba(16, 185, 129, 0.12);
-    border-radius: 16px;
-    padding: 4px 18px;
-    box-shadow: 0 0 12px #10b98180;
+    background: rgba(16,185,129,0.12);
+    border-radius: 12px;
+    padding: 3px 13px;
     color: #10b981;
-    margin-left: 10px;
-    animation: pulseGlow 1.7s infinite alternate;
+    box-shadow: 0 0 10px #10b98180;
+    margin-left: 4px;
 }
-@keyframes pulseGlow {
-    0% { box-shadow: 0 0 8px #10b98180; }
-    100% { box-shadow: 0 0 20px #10b981cc; }
+.section-icon {
+    font-size: 1.05rem;
+    vertical-align: middle;
+    opacity: 0.8;
 }
 .admin-grid {
     flex: 1 1 auto;
     display: grid;
     grid-template-columns: 1fr 1fr;
-    grid-template-rows: 1fr 1fr 0.6fr;
+    grid-template-rows: 1fr 1fr 0.55fr;
     grid-template-areas:
         "infos config"
         "gestion classement"
         "nav nav";
-    gap: 20px 28px;
+    gap: 12px 18px;
     width: 100vw;
-    max-width: 1100px;
-    height: calc(100vh - 56px);
-    padding: 18px 2vw 0 2vw;
+    max-width: 1000px;
+    height: calc(100vh - 40px);
+    padding: 8px 1vw 0 1vw;
     box-sizing: border-box;
-    animation: fade-in 0.8s;
 }
 .card {
     background: rgba(255,255,255,0.18);
-    border-radius: 22px;
-    box-shadow: 0 8px 40px rgba(79,70,229,0.18), 0 1.5px 8px #0002;
-    padding: 18px 18px 14px 18px;
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(79,70,229,0.13), 0 1px 4px #0001;
+    padding: 9px 9px 7px 9px;
     margin: 0;
     min-width: 0;
     width: 100%;
-    font-size: 1.06rem;
+    font-size: 0.96rem;
     display: flex;
     flex-direction: column;
     align-items: stretch;
-    border: 1.5px solid #fff3;
+    border: 1px solid #fff2;
     justify-content: flex-start;
-    backdrop-filter: blur(12px);
+    backdrop-filter: blur(6px);
     transition: box-shadow 0.2s, transform 0.2s;
-    animation: fade-in 0.8s;
-}
-.card:hover {
-    box-shadow: 0 16px 64px #4f46e5a0;
-    transform: translateY(-4px) scale(1.02);
-    border-color: #c4b5fd;
 }
 .card h2 {
-    font-size: 1.13rem;
+    font-size: 1rem;
     font-weight: 700;
-    margin-bottom: 9px;
+    margin-bottom: 5px;
     color: #fff;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 5px;
     letter-spacing: 0.2px;
-    text-shadow: 0 1px 8px #4f46e566;
-}
-.section-icon {
-    font-size: 1.18rem;
-    vertical-align: middle;
-    opacity: 0.8;
+    text-shadow: 0 1px 6px #4f46e544;
 }
 .admin-stats {
     display: flex;
-    gap: 12px;
-    margin-bottom: 12px;
+    gap: 6px;
+    margin-bottom: 7px;
     flex-wrap: wrap;
 }
 .stat-item {
-    background: rgba(34,36,62,0.16);
-    padding: 8px 20px;
-    border-radius: 14px;
-    border: 1px solid #fff7;
-    font-size: 1.08rem;
+    background: rgba(34,36,62,0.13);
+    padding: 3px 8px;
+    border-radius: 8px;
+    border: 1px solid #fff4;
+    font-size: 0.97rem;
     font-weight: 600;
-    box-shadow: 0 1px 6px #4f46e555;
+    box-shadow: 0 1px 3px #4f46e522;
     display: flex;
     align-items: center;
-    gap: 8px;
-    transition: background 0.2s;
+    gap: 4px;
 }
 .stat-item strong {
     font-family: 'Roboto Mono', monospace;
     background: rgba(255,255,255,0.13);
-    border-radius: 7px;
-    padding: 1px 7px;
-    font-size: 1.16em;
+    border-radius: 5px;
+    padding: 0 4px;
+    font-size: 1.05em;
 }
 .admin-links {
     display: flex;
-    gap: 14px;
+    gap: 7px;
     justify-content: center;
-    margin-top: 8px;
+    margin-top: 3px;
     flex-wrap: wrap;
 }
 .admin-links a, .admin-links button {
-    font-size: 1.11rem;
+    font-size: 1rem;
     font-weight: 600;
     text-decoration: none;
-    border-radius: 10px;
-    padding: 8px 23px;
-    background: rgba(34,36,62,0.15);
+    border-radius: 7px;
+    padding: 5px 12px;
+    background: rgba(34,36,62,0.13);
     color: #fff !important;
-    border: 2px solid transparent;
-    box-shadow: 0 2px 10px #4f46e533;
+    border: 1px solid transparent;
+    box-shadow: 0 1px 7px #4f46e525;
     transition: background 0.2s, border 0.2s, box-shadow 0.2s;
-    backdrop-filter: blur(6px);
+    backdrop-filter: blur(2px);
 }
 .admin-links a:hover, .admin-links button:hover {
     background: #4f46e5;
-    box-shadow: 0 2px 24px #4f46e5aa;
+    box-shadow: 0 2px 14px #4f46e592;
     border-color: #fff;
 }
 .form-group label {
     font-weight: 600;
-    margin-bottom: 2px;
+    margin-bottom: 1px;
     color: #fff !important;
-    font-size: 1.07rem;
-    letter-spacing: 0.02em;
+    font-size: 0.97rem;
+    letter-spacing: 0.01em;
 }
 .form-group input, select {
-    background: rgba(255,255,255,0.18);
+    background: rgba(255,255,255,0.11);
     color: #222 !important;
-    border-radius: 12px;
-    border: 2px solid #e5e7eb;
-    font-size: 1.05rem;
-    padding: 11px 13px;
-    margin-bottom: 5px;
-    margin-top: 2px;
-    box-shadow: 0 1px 5px #6d6bbd33;
-    backdrop-filter: blur(3px);
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+    font-size: 0.95rem;
+    padding: 6px 8px;
+    margin-bottom: 2px;
+    margin-top: 1px;
+    box-shadow: 0 1px 2px #6d6bbd22;
+    backdrop-filter: blur(1px);
     transition: border-color 0.2s, background 0.2s;
 }
 .form-group input:focus, select:focus {
@@ -226,36 +205,36 @@ body {
     background: #e0e7ff;
 }
 .input-helper {
-    font-size: 0.91rem;
-    opacity: .83;
-    margin-left: 12px;
+    font-size: 0.74rem;
+    opacity: .73;
+    margin-left: 5px;
     color: #e0e7ff;
 }
 .question-config {
     display: grid;
-    gap: 9px;
+    gap: 4px;
 }
 .game-actions {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 11px;
+    gap: 5px;
+    margin-top: 5px;
 }
 .btn {
-    padding: 10px 22px;
+    padding: 6px 13px;
     border: none;
-    border-radius: 11px;
-    font-size: 1.07rem;
+    border-radius: 7px;
+    font-size: 0.98rem;
     font-weight: 700;
     cursor: pointer;
-    transition: all 0.17s;
-    margin: 2px 7px 2px 0;
-    letter-spacing: 0.04em;
-    box-shadow: 0 1px 12px #4f46e545;
-    border: 2px solid transparent;
+    transition: all 0.13s;
+    margin: 2px 4px 2px 0;
+    letter-spacing: 0.02em;
+    box-shadow: 0 1px 6px #4f46e533;
+    border: 1px solid transparent;
     color: #fff !important;
-    background: rgba(34,36,62,0.22);
-    backdrop-filter: blur(3px);
+    background: rgba(34,36,62,0.14);
+    backdrop-filter: blur(1px);
 }
 .btn-primary { background: linear-gradient(120deg,#4f46e5 60%,#6d6bbd 100%); }
 .btn-primary:hover { background: #4338ca; border-color: #fff; }
@@ -268,31 +247,25 @@ body {
 .btn-secondary { background: linear-gradient(120deg,#6b7280 60%,#818cf8 100%);}
 .btn-secondary:hover { background: #4b5563; border-color: #fff; }
 .game-status {
-    margin-bottom: 8px;
-    font-size: 1.07rem;
+    margin-bottom: 3px;
+    font-size: 0.98rem;
 }
 .admin-status {
-    margin-top: 11px;
-    padding: 10px;
-    background: rgba(255,255,255,0.11);
-    border-radius: 11px;
-    box-shadow: 0 1px 6px #6d6bbd33;
+    margin-top: 5px;
+    padding: 5px;
+    background: rgba(255,255,255,0.07);
+    border-radius: 7px;
+    box-shadow: 0 1px 3px #6d6bbd22;
 }
 .leaderboard-container {
-    margin-top: 6px;
-    padding: 8px 0;
-    font-size: 1.02rem;
+    margin-top: 3px;
+    padding: 5px 0;
+    font-size: 0.93rem;
+    max-height: 80px;
+    overflow-y: auto;
 }
 .question-display {
-    font-size: 1.02rem;
-}
-::-webkit-scrollbar {
-    width: 8px;
-    background: transparent;
-}
-::-webkit-scrollbar-thumb {
-    background: #4f46e5;
-    border-radius: 8px;
+    font-size: 0.93rem;
 }
 @media (max-width: 900px) {
     .admin-grid {
@@ -304,29 +277,30 @@ body {
             "gestion"
             "classement"
             "nav";
-        gap: 12px;
-        padding: 6px 2vw;
+        gap: 7px;
+        padding: 3px 1vw;
         max-width: 99vw;
-        height: calc(100vh - 56px);
+        height: calc(100vh - 40px);
     }
-    .header-glass { padding: 0 10px; height: 48px;}
-    .card { padding: 12px 7px; max-width: 99vw; }
-    .header-title { font-size: 1.06rem;}
+    .header-glass { padding: 0 5px; height: 32px; min-height: 32px;}
+    .card { padding: 6px 4px; max-width: 99vw; }
+    .header-title { font-size: 0.91rem;}
 }
 @media (max-width: 600px) {
-    .card { padding: 7px 2vw; }
-    .admin-links { flex-direction: column; gap: 7px; }
-    .header-title { font-size: 0.95rem;}
+    .card { padding: 4px 1vw; }
+    .admin-links { flex-direction: column; gap: 3px; }
+    .header-title { font-size: 0.8rem;}
 }
 </style>
 </head>
 <body>
 <div class="container">
     <div class="header-glass">
-        <!-- Remplace src par ton logo -->
         <img src="https://raw.githubusercontent.com/github/explore/main/topics/science/science.png" alt="Logo Science Squad" class="logo" />
-        <h1 class="header-title">Science Squad Quiz <span style="font-size:0.9em;opacity:.7;">- Administration</span></h1>
-        <span id="status" class="status-glow"><span class="section-icon">🟢</span> Connecté</span>
+        <h1 class="header-title">
+            Science Squad Quiz <span style="font-size:0.9em;opacity:.7;">- Administration</span>
+            <span id="status" class="status-glow"><span class="section-icon">🟢</span> Connecté</span>
+        </h1>
     </div>
     <div class="admin-grid">
         <!-- Informations générales -->
@@ -395,8 +369,8 @@ body {
             <h2><span class="section-icon">🎮</span> Gestion de la Partie</h2>
             <div class="game-control">
                 <div class="game-status">
-                    <h3 style="font-weight:600; margin:0 0 4px 0;">État actuel:</h3>
-                    <div id="game-status" style="font-size:1.07rem;">⏳ En attente de configuration</div>
+                    <h3 style="font-weight:600; margin:0 0 2px 0; font-size:0.98em;">État actuel:</h3>
+                    <div id="game-status" style="font-size:0.98rem;">⏳ En attente de configuration</div>
                 </div>
                 <div class="game-actions">
                     <button id="start-game-btn" class="btn btn-success" disabled>
