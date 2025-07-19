@@ -185,7 +185,9 @@ function displayQuestion(questionData) {
 // Sélectionner une option
 function selectOption(index) {
     if (selectedOptionIndex !== null) return; // Déjà sélectionné
-    
+    // PATCH: Bloque les spectateurs d'interagir
+    if (currentPlayer?.lives === 0 || currentPlayer?.spectator) return;
+
     selectedOptionIndex = index;
     
     // Mettre à jour l'interface
@@ -289,6 +291,8 @@ function startGameTimer(timeLimit) {
 
 // PATCH : Fonction pour signaler une mauvaise réponse au serveur
 function signalWrongAnswer() {
+    // PATCH: Bloque l'émission si spectateur
+    if (currentPlayer?.lives === 0 || currentPlayer?.spectator) return;
     socket.emit('player-wrong-answer');
 }
 
@@ -326,7 +330,7 @@ function showAnswer(answerData) {
     } else if (selectedOptionIndex !== null) {
         resultText.textContent = '❌ Mauvaise réponse';
         resultText.className = 'incorrect';
-        signalWrongAnswer();
+        signalWrongAnswer(); // <--- Patch: signaler mauvaise réponse au serveur
     } else {
         resultText.textContent = '⏰ Temps écoulé';
         resultText.className = 'incorrect';
@@ -344,6 +348,7 @@ function showAnswer(answerData) {
 // PATCH : Événement pour gérer la sortie du joueur quand il n'a plus de vies
 function handlePlayerOut(message) {
     alert(message || "Vous n'avez plus de vies !");
+    currentPlayer.spectator = true; // PATCH : mode spectateur local
     // Désactiver les boutons de réponse et autres interactions du jeu
     const options = document.querySelectorAll('.game-option');
     options.forEach(option => {
@@ -425,11 +430,12 @@ function initializeSocketEvents() {
     // Mise à jour des joueurs
     socket.on('players-update', (players) => {
         displayLobbyPlayers(players);
-        // PATCH : Met à jour le nombre de vies affichées pendant la partie
+        // PATCH : Met à jour le nombre de vies et le mode spectateur pendant la partie
         if (currentPlayer) {
             const me = players.find(p => p.id === currentPlayer.id);
             if (me) {
                 currentPlayer.lives = me.lives;
+                currentPlayer.spectator = me.spectator; // PATCH: synchronise le mode spectateur
                 if (gameScreen && !gameScreen.classList.contains('hidden')) {
                     document.getElementById('player-lives-game').textContent = `❤️ ${currentPlayer.lives}`;
                 }
