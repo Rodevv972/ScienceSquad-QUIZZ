@@ -79,6 +79,56 @@ const gameSchema = new mongoose.Schema({
   maxPlayers: {
     type: Number,
     default: 50
+  },
+  // Admin management fields
+  settings: {
+    questionCount: {
+      type: Number,
+      default: 10
+    },
+    timePerQuestion: {
+      type: Number,
+      default: 15
+    },
+    difficulty: {
+      type: String,
+      enum: ['easy', 'medium', 'hard', 'mixed'],
+      default: 'mixed'
+    },
+    categories: [{
+      type: String
+    }],
+    isPrivate: {
+      type: Boolean,
+      default: false
+    }
+  },
+  statistics: {
+    totalQuestions: {
+      type: Number,
+      default: 0
+    },
+    averageScore: {
+      type: Number,
+      default: 0
+    },
+    highestScore: {
+      type: Number,
+      default: 0
+    },
+    participationRate: {
+      type: Number,
+      default: 0
+    }
+  },
+  endedAt: {
+    type: Date,
+    default: null
+  },
+  endReason: {
+    type: String,
+    enum: ['completed', 'admin_ended', 'timeout', 'error'],
+    default: 'completed'
   }
 }, {
   timestamps: true
