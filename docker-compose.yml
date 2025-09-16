@@ -1,0 +1,57 @@
+version: '3.8'
+services:
+  mongodb:
+    image: mongo:7.0
+    container_name: sciencequiz-mongo
+    restart: always
+    environment:
+      MONGO_INITDB_DATABASE: sciencequiz
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - sciencequiz-network
+
+  backend:
+    build: ./server
+    container_name: sciencequiz-backend
+    restart: always
+    environment:
+      - NODE_ENV=production
+      - MONGODB_URI=mongodb://mongodb:27017/sciencequiz
+      - PORT=5000
+      - CLIENT_URL=http://localhost:3000
+      - PERPLEXITY_API_KEY=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
+      - JWT_SECRET=sciencequiz_jwt_secret_key_2024
+      - DEFAULT_ADMIN_USERNAME=admin
+      - DEFAULT_ADMIN_PASSWORD=admin123
+    ports:
+      - "5000:5000"
+    depends_on:
+      - mongodb
+    volumes:
+      - ./server/uploads:/app/uploads
+    networks:
+      - sciencequiz-network
+
+  frontend:
+    build: ./client
+    container_name: sciencequiz-frontend
+    restart: always
+    environment:
+      - REACT_APP_API_URL=http://localhost:5000/api
+      - REACT_APP_SERVER_URL=http://localhost:5000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - sciencequiz-network
+
+volumes:
+  mongodb_data:
+
+networks:
+  sciencequiz-network:
+    driver: bridge
