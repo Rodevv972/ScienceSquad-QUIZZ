@@ -2,11 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useSocket } from '../contexts/SocketContext';
-import { Game, GameStats } from '../types';
+import { Game, GameStats, AdminDashboardStats } from '../types';
 import { 
   Shield, LogOut, Plus, Play, SkipForward, Square, 
-  Users, Gamepad2, Trophy, Settings, Eye 
+  Users, Gamepad2, Trophy, Settings, Eye, 
+  HelpCircle, BarChart3, UserCog, Bell, AlertTriangle,
+  Activity
 } from 'lucide-react';
+import { adminAPI } from '../utils/api';
 
 const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -15,6 +18,7 @@ const AdminDashboard: React.FC = () => {
   
   const [currentGame, setCurrentGame] = useState<Game | null>(null);
   const [stats, setStats] = useState<GameStats | null>(null);
+  const [dashboardStats, setDashboardStats] = useState<AdminDashboardStats | null>(null);
   const [isCreatingGame, setIsCreatingGame] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -62,15 +66,26 @@ const AdminDashboard: React.FC = () => {
 
   const loadStats = async () => {
     try {
-      // Simuler des statistiques (remplacer par un appel API réel)
+      // Load enhanced dashboard statistics
+      const dashboardData = await adminAPI.getDashboardStats();
+      setDashboardStats(dashboardData);
+      
+      // Keep compatibility with existing stats
+      setStats({
+        totalPlayers: dashboardData.totalPlayers,
+        activePlayers: dashboardData.onlinePlayers,
+        totalGames: dashboardData.totalGames,
+        activeGames: dashboardData.activeGames
+      });
+    } catch (error) {
+      console.error('Erreur lors du chargement des stats:', error);
+      // Fallback to empty stats
       setStats({
         totalPlayers: 0,
         activePlayers: 0,
         totalGames: 0,
         activeGames: 0
       });
-    } catch (error) {
-      console.error('Erreur lors du chargement des stats:', error);
     } finally {
       setLoading(false);
     }
@@ -224,6 +239,153 @@ const AdminDashboard: React.FC = () => {
             </div>
           </section>
         )}
+
+        {/* Enhanced Admin Management Sections */}
+        <section className="admin-management">
+          <h2 className="section-title">Gestion Avancée</h2>
+          <div className="management-grid">
+            {/* Player Management */}
+            <div className="management-card" onClick={() => navigate('/admin/players')}>
+              <div className="card-icon players">
+                <Users size={24} />
+              </div>
+              <div className="card-content">
+                <h3>Gestion des Joueurs</h3>
+                <p>Bannir, réinitialiser scores, historique</p>
+                <div className="card-stats">
+                  {dashboardStats && (
+                    <span>{dashboardStats.onlinePlayers} en ligne</span>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Game Management */}
+            <div className="management-card" onClick={() => navigate('/admin/games')}>
+              <div className="card-icon games">
+                <Gamepad2 size={24} />
+              </div>
+              <div className="card-content">
+                <h3>Gestion des Parties</h3>
+                <p>Modifier, supprimer, historique détaillé</p>
+                <div className="card-stats">
+                  {dashboardStats && (
+                    <span>{dashboardStats.activeGames} actives</span>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Question Management */}
+            <div className="management-card" onClick={() => navigate('/admin/questions')}>
+              <div className="card-icon questions">
+                <HelpCircle size={24} />
+              </div>
+              <div className="card-content">
+                <h3>Gestion des Questions</h3>
+                <p>CRUD, import/export, catégories</p>
+                <div className="card-stats">
+                  {dashboardStats && (
+                    <span>{dashboardStats.totalQuestions} questions</span>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Statistics Dashboard */}
+            <div className="management-card" onClick={() => navigate('/admin/statistics')}>
+              <div className="card-icon statistics">
+                <BarChart3 size={24} />
+              </div>
+              <div className="card-content">
+                <h3>Statistiques Avancées</h3>
+                <p>Graphiques, analytiques, monitoring</p>
+                <div className="card-stats">
+                  <span>Temps réel</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Admin Management */}
+            <div className="management-card" onClick={() => navigate('/admin/admins')}>
+              <div className="card-icon admins">
+                <UserCog size={24} />
+              </div>
+              <div className="card-content">
+                <h3>Gestion des Admins</h3>
+                <p>Rôles, permissions, logs d'actions</p>
+                <div className="card-stats">
+                  <span>Sécurisé</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Notifications */}
+            <div className="management-card" onClick={() => navigate('/admin/notifications')}>
+              <div className="card-icon notifications">
+                <Bell size={24} />
+              </div>
+              <div className="card-content">
+                <h3>Notifications</h3>
+                <p>Messages globaux et personnels</p>
+                <div className="card-stats">
+                  <span>Communication</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Security & Monitoring */}
+            <div className="management-card" onClick={() => navigate('/admin/security')}>
+              <div className="card-icon security">
+                <AlertTriangle size={24} />
+              </div>
+              <div className="card-content">
+                <h3>Sécurité & Monitoring</h3>
+                <p>Alertes, santé système, maintenance</p>
+                <div className="card-stats">
+                  <span>Surveillance</span>
+                </div>
+              </div>
+            </div>
+
+            {/* System Health */}
+            <div className="management-card" onClick={() => navigate('/admin/system')}>
+              <div className="card-icon system">
+                <Activity size={24} />
+              </div>
+              <div className="card-content">
+                <h3>État du Système</h3>
+                <p>Performance, logs, maintenance</p>
+                <div className="card-stats">
+                  <span>Opérationnel</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Quick Actions */}
+        <section className="quick-actions">
+          <h2 className="section-title">Actions Rapides</h2>
+          <div className="actions-grid">
+            <button className="action-btn primary" onClick={() => navigate('/admin/notifications')}>
+              <Bell size={20} />
+              Envoyer une Annonce
+            </button>
+            <button className="action-btn secondary" onClick={() => navigate('/admin/players')}>
+              <Users size={20} />
+              Voir les Joueurs
+            </button>
+            <button className="action-btn secondary" onClick={() => navigate('/admin/statistics')}>
+              <BarChart3 size={20} />
+              Statistiques Live
+            </button>
+            <button className="action-btn warning" onClick={() => navigate('/admin/security')}>
+              <AlertTriangle size={20} />
+              Alertes Sécurité
+            </button>
+          </div>
+        </section>
 
         {/* Gestion des parties */}
         <section className="game-management">

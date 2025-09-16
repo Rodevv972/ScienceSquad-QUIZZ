@@ -118,4 +118,233 @@ export const leaderboardAPI = {
   },
 };
 
+// API d'administration
+export const adminAPI = {
+  // Gestion des joueurs
+  getPlayers: async (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    const response = await api.get(`/admin/players?${queryString}`);
+    return response.data;
+  },
+
+  getPlayerDetails: async (playerId: string) => {
+    const response = await api.get(`/admin/players/${playerId}`);
+    return response.data;
+  },
+
+  banPlayer: async (playerId: string, reason: string, banType = 'temporary', duration = 24) => {
+    const response = await api.post(`/admin/players/${playerId}/ban`, {
+      reason, banType, duration
+    });
+    return response.data;
+  },
+
+  unbanPlayer: async (playerId: string) => {
+    const response = await api.post(`/admin/players/${playerId}/unban`);
+    return response.data;
+  },
+
+  resetPlayerScore: async (playerId: string) => {
+    const response = await api.post(`/admin/players/${playerId}/reset-score`);
+    return response.data;
+  },
+
+  // Gestion des parties
+  getGames: async (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    const response = await api.get(`/admin/games?${queryString}`);
+    return response.data;
+  },
+
+  getGameDetails: async (gameId: string) => {
+    const response = await api.get(`/admin/games/${gameId}`);
+    return response.data;
+  },
+
+  deleteGame: async (gameId: string) => {
+    const response = await api.delete(`/admin/games/${gameId}`);
+    return response.data;
+  },
+
+  modifyGameSettings: async (gameId: string, settings: any) => {
+    const response = await api.put(`/admin/games/${gameId}/settings`, settings);
+    return response.data;
+  },
+
+  endGame: async (gameId: string) => {
+    const response = await api.post(`/admin/games/${gameId}/end`);
+    return response.data;
+  },
+
+  getGameHistory: async (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    const response = await api.get(`/admin/games/history/detailed?${queryString}`);
+    return response.data;
+  },
+
+  // Gestion des questions
+  getQuestions: async (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    const response = await api.get(`/admin/questions?${queryString}`);
+    return response.data;
+  },
+
+  getQuestionCategories: async () => {
+    const response = await api.get('/admin/questions/categories');
+    return response.data;
+  },
+
+  createQuestion: async (questionData: any) => {
+    const response = await api.post('/admin/questions', questionData);
+    return response.data;
+  },
+
+  updateQuestion: async (questionId: string, questionData: any) => {
+    const response = await api.put(`/admin/questions/${questionId}`, questionData);
+    return response.data;
+  },
+
+  deleteQuestion: async (questionId: string) => {
+    const response = await api.delete(`/admin/questions/${questionId}`);
+    return response.data;
+  },
+
+  importQuestions: async (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await api.post('/admin/questions/import', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+    return response.data;
+  },
+
+  exportQuestions: async (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    const response = await api.get(`/admin/questions/export?${queryString}`);
+    return response.data;
+  },
+
+  getQuestionStats: async () => {
+    const response = await api.get('/admin/questions/statistics');
+    return response.data;
+  },
+
+  // Statistiques
+  getDashboardStats: async () => {
+    const response = await api.get('/admin/statistics/dashboard');
+    return response.data;
+  },
+
+  getPlayerTimeline: async (period = '7d') => {
+    const response = await api.get(`/admin/statistics/players/timeline?period=${period}`);
+    return response.data;
+  },
+
+  getGameStats: async () => {
+    const response = await api.get('/admin/statistics/games/stats');
+    return response.data;
+  },
+
+  getLeaderboardStats: async () => {
+    const response = await api.get('/admin/statistics/leaderboard');
+    return response.data;
+  },
+
+  getRealtimeActivity: async () => {
+    const response = await api.get('/admin/statistics/activity/realtime');
+    return response.data;
+  },
+
+  // Gestion des admins
+  getAdmins: async () => {
+    const response = await api.get('/admin/admins');
+    return response.data;
+  },
+
+  createAdmin: async (adminData: any) => {
+    const response = await api.post('/admin/admins', adminData);
+    return response.data;
+  },
+
+  updateAdminPermissions: async (adminId: string, permissions: any, role?: string) => {
+    const response = await api.put(`/admin/admins/${adminId}/permissions`, {
+      permissions, role
+    });
+    return response.data;
+  },
+
+  deactivateAdmin: async (adminId: string) => {
+    const response = await api.delete(`/admin/admins/${adminId}`);
+    return response.data;
+  },
+
+  changeAdminPassword: async (adminId: string, currentPassword: string, newPassword: string) => {
+    const response = await api.put(`/admin/admins/${adminId}/password`, {
+      currentPassword, newPassword
+    });
+    return response.data;
+  },
+
+  getAdminLogs: async (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    const response = await api.get(`/admin/admins/logs?${queryString}`);
+    return response.data;
+  },
+
+  // Notifications
+  getNotifications: async (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    const response = await api.get(`/admin/notifications?${queryString}`);
+    return response.data;
+  },
+
+  sendGlobalNotification: async (notificationData: any) => {
+    const response = await api.post('/admin/notifications/global', notificationData);
+    return response.data;
+  },
+
+  sendPersonalNotification: async (notificationData: any) => {
+    const response = await api.post('/admin/notifications/personal', notificationData);
+    return response.data;
+  },
+
+  deleteNotification: async (notificationId: string) => {
+    const response = await api.delete(`/admin/notifications/${notificationId}`);
+    return response.data;
+  },
+
+  getNotificationStats: async () => {
+    const response = await api.get('/admin/notifications/stats');
+    return response.data;
+  },
+
+  // Sécurité
+  getSecurityAlerts: async () => {
+    const response = await api.get('/admin/security/alerts');
+    return response.data;
+  },
+
+  getSystemHealth: async () => {
+    const response = await api.get('/admin/security/health');
+    return response.data;
+  },
+
+  toggleMaintenance: async (enabled: boolean, message?: string) => {
+    const response = await api.post('/admin/security/maintenance', {
+      enabled, message
+    });
+    return response.data;
+  },
+
+  getMonitoringActions: async (hours = 24) => {
+    const response = await api.get(`/admin/security/monitoring/actions?hours=${hours}`);
+    return response.data;
+  },
+
+  createSecurityAlert: async (alertData: any) => {
+    const response = await api.post('/admin/security/alerts', alertData);
+    return response.data;
+  }
+};
+
 export default api;

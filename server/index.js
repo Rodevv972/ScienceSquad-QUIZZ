@@ -8,6 +8,7 @@ require('dotenv').config();
 const authRoutes = require('./routes/auth');
 const gameRoutes = require('./routes/game');
 const leaderboardRoutes = require('./routes/leaderboard');
+const adminRoutes = require('./routes/admin');
 const GameManager = require('./services/GameManager');
 
 const app = express();
@@ -36,6 +37,7 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/sciencequ
 app.use('/api/auth', authRoutes);
 app.use('/api/game', gameRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Initialize Game Manager
 const gameManager = new GameManager(io);

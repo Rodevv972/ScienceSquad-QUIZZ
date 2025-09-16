@@ -20,6 +20,50 @@ const adminSchema = new mongoose.Schema({
   isActive: {
     type: Boolean,
     default: true
+  },
+  // Enhanced admin fields
+  role: {
+    type: String,
+    enum: ['admin', 'super_admin', 'moderator'],
+    default: 'admin'
+  },
+  permissions: {
+    manageGames: {
+      type: Boolean,
+      default: true
+    },
+    managePlayers: {
+      type: Boolean,
+      default: true
+    },
+    manageQuestions: {
+      type: Boolean,
+      default: true
+    },
+    manageAdmins: {
+      type: Boolean,
+      default: false
+    },
+    viewStatistics: {
+      type: Boolean,
+      default: true
+    },
+    systemMaintenance: {
+      type: Boolean,
+      default: false
+    }
+  },
+  createdBy: {
+    type: String,
+    default: null
+  },
+  actionCount: {
+    type: Number,
+    default: 0
+  },
+  lastActionAt: {
+    type: Date,
+    default: null
   }
 }, {
   timestamps: true
