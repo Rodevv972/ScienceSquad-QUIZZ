@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
-  Users, Ban, RotateCcw, Eye, MessageSquare, 
-  Filter, Download, AlertTriangle, ArrowLeft
+  Users, Ban, RotateCcw, Eye, 
+  Download, AlertTriangle, ArrowLeft
 } from 'lucide-react';
 import { AdminPlayer } from '../../types';
 import { adminAPI } from '../../utils/api';
@@ -18,7 +18,6 @@ const PlayerManagement: React.FC = () => {
   
   // Filters
   const [statusFilter, setStatusFilter] = useState('all');
-  const [searchTerm, setSearchTerm] = useState('');
   
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
@@ -39,21 +38,16 @@ const PlayerManagement: React.FC = () => {
     action: () => {}
   });
   
-  const [selectedPlayer, setSelectedPlayer] = useState<AdminPlayer | null>(null);
   const [isActionLoading, setIsActionLoading] = useState(false);
 
-  useEffect(() => {
-    loadPlayers();
-  }, [currentPage, statusFilter, searchTerm]);
-
-  const loadPlayers = async () => {
+  const loadPlayers = useCallback(async () => {
     try {
       setLoading(true);
       const params = {
         page: currentPage.toString(),
         limit: '20',
         status: statusFilter,
-        search: searchTerm,
+        search: '', // Remove searchTerm dependency
         sortBy: 'lastActive',
         sortOrder: 'desc'
       };
@@ -68,10 +62,13 @@ const PlayerManagement: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentPage, statusFilter]);
+
+  useEffect(() => {
+    loadPlayers();
+  }, [loadPlayers]);
 
   const handleBanPlayer = async (player: AdminPlayer) => {
-    setSelectedPlayer(player);
     setConfirmModal({
       isOpen: true,
       title: 'Bannir le joueur',
@@ -94,7 +91,6 @@ const PlayerManagement: React.FC = () => {
   };
 
   const handleUnbanPlayer = async (player: AdminPlayer) => {
-    setSelectedPlayer(player);
     setConfirmModal({
       isOpen: true,
       title: 'Débannir le joueur',
@@ -117,7 +113,6 @@ const PlayerManagement: React.FC = () => {
   };
 
   const handleResetScore = async (player: AdminPlayer) => {
-    setSelectedPlayer(player);
     setConfirmModal({
       isOpen: true,
       title: 'Réinitialiser le score',
