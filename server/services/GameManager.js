@@ -258,6 +258,9 @@ class GameManager {
 
       await game.save();
       
+      // Check for suspicious activity after answer submission
+      this.detectSuspiciousActivity(player, game);
+      
       socket.emit('answer-submitted', { isCorrect: isCorrect });
       
     } catch (error) {
@@ -362,6 +365,26 @@ class GameManager {
           await this.endGame(socket, gameId);
           break;
           
+        case 'kick-player':
+          await this.kickPlayer(socket, gameId, data.pseudo);
+          break;
+          
+        case 'ban-player':
+          await this.banPlayerFromGame(socket, gameId, data.pseudo, data.reason);
+          break;
+          
+        case 'modify-game-settings':
+          await this.modifyGameSettings(socket, gameId, data.settings);
+          break;
+          
+        case 'broadcast-message':
+          await this.broadcastAdminMessage(socket, gameId, data.message);
+          break;
+          
+        case 'get-game-stats':
+          await this.sendGameStatistics(socket, gameId);
+          break;
+          
         default:
           socket.emit('error', { message: 'Action non reconnue' });
       }
@@ -428,6 +451,207 @@ class GameManager {
       
       this.io.to('lobby').emit('lobby-updated', this.getLobbyPlayers());
     }
+  }
+
+  // New admin-specific methods
+  async kickPlayer(adminSocket, gameId, pseudo) {
+    try {
+      const game = await Game.findOne({ gameId: gameId });
+      if (!game || game.adminId !== adminSocket.id) {
+        adminSocket.emit('error', { message: 'Non autorisé' });
+        return;
+      }
+
+      // Find player in game
+      const playerIndex = game.players.findIndex(p => p.pseudo === pseudo);
+      if (playerIndex === -1) {
+        adminSocket.emit('error', { message: 'Joueur non trouvé dans la partie' });
+        return;
+      }
+
+      // Remove player from game
+      const kickedPlayer = game.players[playerIndex];
+      game.players.splice(playerIndex, 1);
+      await game.save();
+
+      // Notify the kicked player
+      const playerSockets = Array.from(this.io.sockets.sockets.values())
+        .filter(s => this.getPlayerPseudo(s) === pseudo);
+      
+      playerSockets.forEach(playerSocket => {
+        playerSocket.emit('kicked-from-game', { 
+          gameId, 
+          reason: 'Exclu par l\'administrateur' 
+        });
+        playerSocket.leave(gameId);
+      });
+
+      // Notify other players
+      this.io.to(gameId).emit('player-kicked', { 
+        pseudo, 
+        message: `${pseudo} a été exclu de la partie` 
+      });
+
+      console.log(`👮 Joueur ${pseudo} exclu de la partie ${gameId} par admin`);
+    } catch (error) {
+      console.error('Erreur lors de l\'exclusion du joueur:', error);
+      adminSocket.emit('error', { message: 'Erreur lors de l\'exclusion du joueur' });
+    }
+  }
+
+  async banPlayerFromGame(adminSocket, gameId, pseudo, reason = 'Comportement inapproprié') {
+    try {
+      const game = await Game.findOne({ gameId: gameId });
+      if (!game || game.adminId !== adminSocket.id) {
+        adminSocket.emit('error', { message: 'Non autorisé' });
+        return;
+      }
+
+      // Find and update player
+      const player = await Player.findOne({ pseudo });
+      if (player) {
+        player.warnings += 1;
+        if (player.warnings >= 3) {
+          player.isBanned = true;
+          player.banExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24h ban
+        }
+        await player.save();
+      }
+
+      // Kick from current game
+      await this.kickPlayer(adminSocket, gameId, pseudo);
+
+      console.log(`🚫 Joueur ${pseudo} averti/banni par admin: ${reason}`);
+    } catch (error) {
+      console.error('Erreur lors du bannissement du joueur:', error);
+      adminSocket.emit('error', { message: 'Erreur lors du bannissement du joueur' });
+    }
+  }
+
+  async modifyGameSettings(adminSocket, gameId, settings) {
+    try {
+      const game = await Game.findOne({ gameId: gameId });
+      if (!game || game.adminId !== adminSocket.id) {
+        adminSocket.emit('error', { message: 'Non autorisé' });
+        return;
+      }
+
+      if (game.status !== 'waiting') {
+        adminSocket.emit('error', { message: 'Impossible de modifier une partie en cours' });
+        return;
+      }
+
+      // Update settings
+      Object.assign(game.settings, settings);
+      await game.save();
+
+      // Notify players of changes
+      this.io.to(gameId).emit('game-settings-updated', {
+        settings: game.settings,
+        message: 'Les paramètres de la partie ont été modifiés'
+      });
+
+      console.log(`⚙️ Paramètres de la partie ${gameId} modifiés par admin`);
+    } catch (error) {
+      console.error('Erreur lors de la modification des paramètres:', error);
+      adminSocket.emit('error', { message: 'Erreur lors de la modification des paramètres' });
+    }
+  }
+
+  async broadcastAdminMessage(adminSocket, gameId, message) {
+    try {
+      const game = await Game.findOne({ gameId: gameId });
+      if (!game || game.adminId !== adminSocket.id) {
+        adminSocket.emit('error', { message: 'Non autorisé' });
+        return;
+      }
+
+      this.io.to(gameId).emit('admin-message', {
+        message,
+        timestamp: new Date(),
+        from: 'Administrateur'
+      });
+
+      console.log(`📢 Message admin diffusé dans la partie ${gameId}: ${message}`);
+    } catch (error) {
+      console.error('Erreur lors de la diffusion du message:', error);
+      adminSocket.emit('error', { message: 'Erreur lors de la diffusion du message' });
+    }
+  }
+
+  async sendGameStatistics(adminSocket, gameId) {
+    try {
+      const game = await Game.findOne({ gameId: gameId });
+      if (!game || game.adminId !== adminSocket.id) {
+        adminSocket.emit('error', { message: 'Non autorisé' });
+        return;
+      }
+
+      const stats = {
+        gameId: game.gameId,
+        status: game.status,
+        playerCount: game.players.length,
+        questionsPlayed: game.currentQuestion,
+        totalQuestions: game.questions.length,
+        averageScore: game.players.length > 0 
+          ? game.players.reduce((sum, p) => sum + p.score, 0) / game.players.length 
+          : 0,
+        topScore: game.players.length > 0 
+          ? Math.max(...game.players.map(p => p.score)) 
+          : 0,
+        duration: game.createdAt ? Date.now() - game.createdAt.getTime() : 0,
+        playerStats: game.players.map(p => ({
+          pseudo: p.pseudo,
+          score: p.score,
+          correctAnswers: p.answers.filter(a => a.isCorrect).length,
+          totalAnswers: p.answers.length,
+          isConnected: p.isConnected
+        }))
+      };
+
+      adminSocket.emit('game-statistics', stats);
+    } catch (error) {
+      console.error('Erreur lors de l\'envoi des statistiques:', error);
+      adminSocket.emit('error', { message: 'Erreur lors de l\'envoi des statistiques' });
+    }
+  }
+
+  // Method to check for suspicious activity
+  detectSuspiciousActivity(player, game) {
+    const alerts = [];
+
+    // Check for unusually fast answers
+    const recentAnswers = player.answers.slice(-5);
+    const averageTime = recentAnswers.reduce((sum, a) => sum + a.timeToAnswer, 0) / recentAnswers.length;
+    
+    if (averageTime < 2 && recentAnswers.length >= 3) {
+      alerts.push({
+        type: 'fast_answers',
+        severity: 'medium',
+        message: `Joueur ${player.pseudo} répond très rapidement (${averageTime.toFixed(2)}s en moyenne)`
+      });
+    }
+
+    // Check for perfect score with fast answers
+    const correctRate = player.answers.filter(a => a.isCorrect).length / player.answers.length;
+    if (correctRate > 0.9 && averageTime < 3 && player.answers.length >= 5) {
+      alerts.push({
+        type: 'perfect_fast_answers',
+        severity: 'high',
+        message: `Joueur ${player.pseudo} a un taux de réussite élevé (${(correctRate * 100).toFixed(1)}%) avec des réponses rapides`
+      });
+    }
+
+    // Send alerts to admins if any
+    if (alerts.length > 0) {
+      this.io.emit('admin-security-alert', {
+        gameId: game.gameId,
+        player: player.pseudo,
+        alerts
+      });
+    }
+
+    return alerts;
   }
 }
 

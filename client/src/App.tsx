@@ -8,6 +8,7 @@ import AdminLoginPage from './pages/AdminLoginPage';
 import LobbyPage from './pages/LobbyPage';
 import GamePage from './pages/GamePage';
 import AdminDashboard from './pages/AdminDashboard';
+import PlayerManagement from './pages/admin/PlayerManagement';
 import LeaderboardPage from './pages/LeaderboardPage';
 import './App.css';
 
@@ -23,7 +24,9 @@ function App() {
               <Route path="/admin/login" element={<AdminLoginPage />} />
               <Route path="/lobby" element={<LobbyPage />} />
               <Route path="/game/:gameId" element={<GamePage />} />
+              <Route path="/admin" element={<AdminDashboard />} />
               <Route path="/admin/dashboard" element={<AdminDashboard />} />
+              <Route path="/admin/players" element={<PlayerManagement />} />
               <Route path="/leaderboard" element={<LeaderboardPage />} />
             </Routes>
           </div>

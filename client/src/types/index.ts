@@ -87,3 +87,178 @@ export interface GameStats {
     score: number;
   };
 }
+
+// Extended admin types
+export interface AdminPlayer extends Player {
+  isBanned: boolean;
+  banExpiresAt?: Date;
+  warnings: number;
+  gameHistory: GameHistoryEntry[];
+  statistics: PlayerStatistics;
+  lastActive: Date;
+  createdAt: Date;
+}
+
+export interface GameHistoryEntry {
+  gameId: string;
+  date: Date;
+  score: number;
+  position: number;
+  questionsAnswered: number;
+  correctAnswers: number;
+}
+
+export interface PlayerStatistics {
+  averageScore: number;
+  bestScore: number;
+  totalCorrectAnswers: number;
+  totalQuestionsAnswered: number;
+  averageAnswerTime: number;
+  favoriteCategory?: string;
+}
+
+export interface AdminQuestion {
+  _id: string;
+  question: string;
+  choices: string[];
+  correctAnswer: number;
+  explanation: string;
+  category: string;
+  subcategory: string;
+  difficulty: 'easy' | 'medium' | 'hard';
+  timeLimit: number;
+  tags: string[];
+  createdBy: string;
+  isActive: boolean;
+  usage: QuestionUsage;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface QuestionUsage {
+  timesUsed: number;
+  correctAnswerRate: number;
+  averageAnswerTime: number;
+  lastUsed?: Date;
+}
+
+export interface AdminGame extends Game {
+  settings: GameSettings;
+  statistics: GameStatistics;
+  endedAt?: Date;
+  endReason: 'completed' | 'admin_ended' | 'timeout' | 'error';
+  playerCount: number;
+}
+
+export interface GameSettings {
+  questionCount: number;
+  timePerQuestion: number;
+  difficulty: 'easy' | 'medium' | 'hard' | 'mixed';
+  categories: string[];
+  isPrivate: boolean;
+}
+
+export interface GameStatistics {
+  totalQuestions: number;
+  averageScore: number;
+  highestScore: number;
+  participationRate: number;
+}
+
+export interface AdminUser {
+  _id: string;
+  username: string;
+  role: 'admin' | 'super_admin' | 'moderator';
+  permissions: AdminPermissions;
+  isActive: boolean;
+  lastLogin?: Date;
+  createdBy?: string;
+  actionCount: number;
+  lastActionAt?: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface AdminPermissions {
+  manageGames: boolean;
+  managePlayers: boolean;
+  manageQuestions: boolean;
+  manageAdmins: boolean;
+  viewStatistics: boolean;
+  systemMaintenance: boolean;
+}
+
+export interface AdminLog {
+  _id: string;
+  adminUsername: string;
+  action: string;
+  targetType: 'player' | 'game' | 'question' | 'admin' | 'system';
+  targetId?: string;
+  targetName?: string;
+  details: any;
+  ipAddress?: string;
+  userAgent?: string;
+  createdAt: Date;
+}
+
+export interface Notification {
+  _id: string;
+  type: 'personal' | 'global' | 'warning' | 'info' | 'alert';
+  title: string;
+  message: string;
+  sender: string;
+  recipients?: NotificationRecipient[];
+  isGlobal: boolean;
+  priority: 'low' | 'normal' | 'high' | 'urgent';
+  expiresAt?: Date;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface NotificationRecipient {
+  playerId: string;
+  pseudo: string;
+  isRead: boolean;
+  readAt?: Date;
+}
+
+export interface SecurityAlert {
+  type: string;
+  severity: 'low' | 'medium' | 'high' | 'urgent';
+  message: string;
+  playerId?: string;
+  playerName?: string;
+  createdAt: Date;
+}
+
+export interface SystemHealth {
+  status: 'healthy' | 'warning' | 'critical' | 'error';
+  database: DatabaseStatus;
+  memory: MemoryStatus;
+  uptime: number;
+  recentErrors: number;
+  timestamp: Date;
+}
+
+export interface DatabaseStatus {
+  connected: boolean;
+  state: number;
+  host: string;
+  name: string;
+}
+
+export interface MemoryStatus {
+  used: number;
+  total: number;
+  percentage: number;
+}
+
+export interface AdminDashboardStats {
+  totalPlayers: number;
+  onlinePlayers: number;
+  totalGames: number;
+  activeGames: number;
+  totalQuestions: number;
+  recentActions: AdminLog[];
+}
